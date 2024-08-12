@@ -1,10 +1,11 @@
-name: Spring demo GHA
+name: CI/CD Pipeline
 
 
 on:
   push:
     branches:
       - main
+      - master
   pull_request:
     branches:
       - main
@@ -13,6 +14,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout code
@@ -24,9 +26,23 @@ jobs:
           java-version: '22'
           distribution: 'temurin'
 
-      - name: Build
-        run: mvn clean install
+      - name: Build with Maven
+        run: mvn clean package --file pom.xml
 
-      - name: Test
+      - name: Run Tests
         run: mvn test
+        if: ${{contains(github.event.head_commit.message,'test commit')}}
+
+#      - name: Upload jar to Github
+#        if: ${{success()}}
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: myapp-jar
+#          path: target/*.jar
+
+#      - name: Build
+#        run: mvn clean install
+#
+#      - name: Test
+#        run: mvn test
 
